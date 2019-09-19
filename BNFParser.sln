@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29102.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BNFParser", "BNFParser\BNFParser.csproj", "{4EECA412-57B4-462A-B101-3843FA4090A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4EECA412-57B4-462A-B101-3843FA4090A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EECA412-57B4-462A-B101-3843FA4090A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EECA412-57B4-462A-B101-3843FA4090A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EECA412-57B4-462A-B101-3843FA4090A4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9C7ADC8B-7DF2-4E24-AC10-3DB80F6A612E}
+	EndGlobalSection
+EndGlobal
