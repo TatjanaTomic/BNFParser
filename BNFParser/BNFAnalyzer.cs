@@ -185,45 +185,5 @@ namespace BNFParser
                 tokens.Add(match.Value);
             return tokens.ToArray();
         }
-
-        public static void CitiesCrawler()
-        {
-            string html = string.Empty;
-            string url = "http://worldpopulationreview.com/continents/cities-in-europe/";
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
-            using (Stream stream = response.GetResponseStream())
-            using (StreamReader reader = new StreamReader(stream))
-            {
-                html = reader.ReadToEnd();
-            }
-
-            Console.WriteLine(html);
-            /*
-            StringBuilder webPage = new StringBuilder();
-            const string citiesURL = "http://worldpopulationreview.com/continents/cities-in-europe/";
-            using (WebClient client = new WebClient())
-            {
-                webPage.Append(client.DownloadString(citiesURL));
-            }
-
-            string webPageS = webPage.ToString();
-            Console.WriteLine(webPageS);
-            Console.ReadKey();
-            
-            List<string> cities = new List<string>();
-            Regex citiesRegex = new Regex(@"<td>([A-Za-z' ]+)</td>");
-            MatchCollection matches = citiesRegex.Matches(webPageS);
-            foreach(Match match in matches)
-                cities.Add(match.Groups[1].ToString());
-
-            int i = 1;
-            foreach (string city in cities)
-                Console.WriteLine((i++) + " " + city);
-            */
-            Console.ReadKey();
-        }
     }
 }
