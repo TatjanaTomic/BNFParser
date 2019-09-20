@@ -62,7 +62,7 @@ namespace BNFParser
                     }
                     if (CheckLine(line) == 1)
                     {
-                        line = line.Trim();
+                        line = line.Replace(" ", "");
                         string[] tokens1 = ReadNonterminalTokensFromLine(line);
                         string[] tokens2 = ReadTerminalTokensFromLine(line);
                         string rightSide = GetRightSide(line);
@@ -79,15 +79,11 @@ namespace BNFParser
 
                         for (int i = 1; i < tokens1.Length; i++)
                             expectedTokens.Add(tokens1[i]);
-                        for (int i = 0; i < expectedTokens.Count; i++)
-                        {
-                            if (expectedTokens[i] == rootToken)
-                                expectedTokens.RemoveAt(i);
-                        }
+                        expectedTokens = RemoveExpectedToken(rootToken, expectedTokens);
                     }
                     else if(CheckLine(line) == 2)
                     {
-                        line = line.Trim();
+                        line = line.Replace(" ", "");
                         string[] tokens1 = ReadNonterminalTokensFromLine(line);
                         string rootToken = tokens1[0];
                         string rightSide = GetRightSide(line);
@@ -98,7 +94,7 @@ namespace BNFParser
                         grammar.AddSpecialTerminalToken(rightSide);
                         grammar.AddProduction(rootToken, rightSide);
 
-                        expectedTokens.Remove(rootToken);
+                        expectedTokens = RemoveExpectedToken(rootToken, expectedTokens);
                     }
                     else
                     {
@@ -135,8 +131,6 @@ namespace BNFParser
             }
             return result;
         }
-
-
 
         /// <summary>
         /// Funkcija na osnovu prethodno navedenih regexa provjerava da li je procitana linija bnf fajla u pravilnom obliku
@@ -184,6 +178,17 @@ namespace BNFParser
             foreach (Match match in matches)
                 tokens.Add(match.Value);
             return tokens.ToArray();
+        }
+
+        private static List<string> RemoveExpectedToken(string rootToken, List<string> expectedTokens)
+        {
+            List<string> tmpExpectedTokens = new List<string>();
+            foreach (string token in expectedTokens)
+            {
+                if (token != rootToken)
+                    tmpExpectedTokens.Add(token);
+            }
+            return tmpExpectedTokens;
         }
     }
 }

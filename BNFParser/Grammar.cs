@@ -11,7 +11,7 @@ namespace BNFParser
         public string InitialToken { get; set; }
         public List<string> nonterminalTokens;
         public List<TerminalToken> terminalTokens;
-        public Dictionary<string, string> productions;
+        public List<(string, string)> productions;
 
         public static readonly string PHONE_NUMBER = "[-+]?[0-9]+(?:\\.?[0-9]+)*(?:[eE][-+]?[0-9]+)?";
         public static readonly string CONSTANT = "[-+]?[0-9]+(?:\\.?[0-9]+)*(?:[eE][-+]?[0-9]+)?";
@@ -24,12 +24,12 @@ namespace BNFParser
             InitialToken = "";
             nonterminalTokens = new List<string>();
             terminalTokens = new List<TerminalToken>();
-            productions = new Dictionary<string, string>();
+            productions = new List<(string, string)>();
         }
 
         internal void AddNonterminalToken(string token)
         {
-            if (nonterminalTokens.Contains(token))
+            if (!nonterminalTokens.Contains(token))
                 nonterminalTokens.Add(token);
         }
 
@@ -57,7 +57,7 @@ namespace BNFParser
         
         internal void AddProduction(string rootToken, string definition)
         {
-            productions.Add(rootToken, definition);
+            productions.Add((rootToken, definition));
         }
 
         private string GetRegexPattern(string rightSide)
