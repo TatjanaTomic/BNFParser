@@ -12,13 +12,13 @@ namespace BNFParser
         {
             try
             {
-                _ = new BNFAnalyzer().CheckBNF();
+                Grammar grammar = BNFAnalyzer.CheckBNF();
             }
             catch(Exception e)
             {
                 Console.WriteLine(e.Message);
             }
-
+            
             Console.ReadKey();
         }
     }

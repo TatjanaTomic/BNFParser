@@ -7,17 +7,18 @@ using System.Threading.Tasks;
 
 namespace BNFParser
 {
-    class TerminalSymbol
+    class TerminalToken
     {
-        public TerminalSymbol() { }
-        public TerminalSymbol(string name, string regex)
+        public string Name { get; set; }
+        public string RegexPattern { get; set; }
+        public Regex Definition { get; set; }
+
+        public TerminalToken(string name, string regex)
         {
             Name = name;
             RegexPattern = regex;
             Definition = new Regex(RegexPattern);
         }
-        public string Name { get; set; }
-        public string RegexPattern { get; set; }
-        public Regex Definition { get; set; }
+        
     }
 }
