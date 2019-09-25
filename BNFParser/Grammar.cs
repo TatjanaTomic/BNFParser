@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace BNFParser
@@ -11,13 +13,13 @@ namespace BNFParser
         public string InitialToken { get; set; }
         public List<string> nonterminalTokens;
         public List<TerminalToken> terminalTokens;
-        public List<(string, string)> productions;
+        public List<(string token, string definition)> productions;
 
-        public static readonly string PHONE_NUMBER = "[-+]?[0-9]+(?:\\.?[0-9]+)*(?:[eE][-+]?[0-9]+)?";
-        public static readonly string CONSTANT = "[-+]?[0-9]+(?:\\.?[0-9]+)*(?:[eE][-+]?[0-9]+)?";
+        public static readonly string PHONE_NUMBER = "(((\\+|00) *[0-9]{2,3}) *|0)[0-9]{2}(\\/|-| )?[0-9]{3}(-| )?[0-9]{3,4}";
+        public static readonly string CONSTANT = "[-+]?[0-9]+(?:\\.[0-9]+)*(?:[eE][-+]?[0-9]*)?";
         public static readonly string EMAIL = "[a-zA-Z0-9.!#$%&’*+\\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*";
-        public static readonly string CITY = "Istanbul";
-        public static readonly string URL = "";
+        public static readonly string URL;
+        public static string CITY;
 
         public Grammar()
         {
@@ -42,22 +44,36 @@ namespace BNFParser
         internal void AddSpecialTerminalToken(string rightSide)
         {
             if (rightSide == "broj_telefona")
-                terminalTokens.Add(new TerminalToken("broj_telefona", PHONE_NUMBER));
+                terminalTokens.Add(new TerminalToken("\"broj_telefona\"", PHONE_NUMBER));
             else if (rightSide == "brojevna_konstanta")
-                terminalTokens.Add(new TerminalToken("bojevna_konstanta", CONSTANT));
+                terminalTokens.Add(new TerminalToken("\"brojevna_konstanta\"", CONSTANT));
             else if (rightSide == "mejl_adresa")
-                terminalTokens.Add(new TerminalToken("mejl_adresa", EscapeSpecials(EMAIL)));
+                terminalTokens.Add(new TerminalToken("\"mejl_adresa\"", EMAIL));
             else if (rightSide == "veliki_grad")
-                terminalTokens.Add(new TerminalToken("veliki_grad", CITY));
+            {
+                AddCityRegex();
+                terminalTokens.Add(new TerminalToken("\"veliki_grad\"", CITY));
+            }
             else if (rightSide == "web_link")
-                terminalTokens.Add(new TerminalToken("web_link", URL));
+                terminalTokens.Add(new TerminalToken("\"web_link\"", URL));
             else if (rightSide.StartsWith("regex"))
-                terminalTokens.Add(new TerminalToken(rightSide, GetRegexPattern(rightSide)));
+                terminalTokens.Add(new TerminalToken("\"" + rightSide.Replace(" ", "_") + "\"", GetRegexPattern(rightSide)));   ///   U nazivu ovog terminalnog čvora eventualne razmake ću zamijeniti znakom _ zbog kasnije provjere, ali u suštini regex ostaje isti
         }
-        
-        internal void AddProduction(string rootToken, string definition)
+
+
+        internal void AddProduction(string rootToken, string definition) //line je broj linije BNF fajla u kojoj se nalazi data definicija
         {
             productions.Add((rootToken, definition));
+        }
+
+        private void AddCityRegex()
+        {
+            if (!File.Exists("citiesRegex.txt"))
+                CitiesCrawler.CreateCitiesRegex();
+      
+            StreamReader reader = new StreamReader(new FileStream("citiesRegex.txt", FileMode.Open));
+            CITY = reader.ReadToEnd();
+            reader.Close();   
         }
 
         private string GetRegexPattern(string rightSide)
@@ -77,7 +93,7 @@ namespace BNFParser
 
         private string EscapeSpecials(string str)
         {
-            string[] specials = { "\\", "[", "\"", "^", "$", ".", "|", "?", "*", "+", "(", ")", "{", "}", "<", ">" };
+            string[] specials = { "\\", "\"", "^", "$", ".", "|", "?", "*", "+"};
             foreach (string special in specials)
             {
                 if (str.Contains(special))
@@ -85,6 +101,5 @@ namespace BNFParser
             }
             return str;
         }
-
     }
 }

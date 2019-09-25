@@ -29,7 +29,7 @@ namespace BNFParser
         private static readonly string LINE3 = LEFT_SIDE + ASSIGNMENT + SPACE + "mejl_adresa" + SPACE;
         private static readonly string LINE4 = LEFT_SIDE + ASSIGNMENT + SPACE + "web_link" + SPACE;
         private static readonly string LINE5 = LEFT_SIDE + ASSIGNMENT + SPACE + "brojevna_konstanta" + SPACE;
-        private static readonly string LINE6 = LEFT_SIDE + ASSIGNMENT + SPACE + "veliki grad" + SPACE;
+        private static readonly string LINE6 = LEFT_SIDE + ASSIGNMENT + SPACE + "veliki_grad" + SPACE;
         private static readonly string LINE7 = LEFT_SIDE + ASSIGNMENT + SPACE + "regex\\(.*?\\)" + SPACE;
 
         /// <summary>
@@ -37,6 +37,7 @@ namespace BNFParser
         /// Čita se linija po linija i provjerava da li odgovara jednom od validnih oblika linije bnf-a
         /// Tokeni koji se nalaze sa desne strane znaka ::= i koji se neterminalni dodaju se u listu expectedTokens kako bi se provjerilo da li su svi definisani u config.bnf fajlu
         /// [1] Kod dodavanja produkcija u gramatiku - desnu stranu razdvojim na osnovu "|" ako postoji, svaki dobijeni izraz predstavlja po jednu definiciju odgovarajućeg neterminalnog simbola, tj. po jednu produkciju koju trebam dodati u gramatiku
+        /// Moli Boga da neko ne unese <izraz>=regex(nesto_sto_ima_razmak) jer tad baš i neće raditi ovaj programčić 
         /// </summary>
         /// <returns></returns>
         public static Grammar CheckBNF()
@@ -44,78 +45,96 @@ namespace BNFParser
             Grammar grammar = new Grammar();
 
             if (!File.Exists("config.bnf"))
-                throw new FileNotFoundException("Greška - ne postoji config.bnf fajl!");
-            else
+                throw new FileNotFoundException("Greška - ne postoji config.bnf fajl.");
+
+            string path = "C:\\Users\\Tatjana Tomic\\source\\repos\\BNFParser\\BNFParser\\bin\\Debug\\config.bnf";
+            StreamReader reader = new StreamReader(new FileStream(path, FileMode.Open));
+            string line = reader.ReadLine();
+            int count = 1;
+            if (line == null)
+                    throw new RuleException("Greška - fajl config.bnf je prazan.");
+
+            List<string> expectedTokens = new List<string>();
+
+            do
             {
-                StreamReader reader = new StreamReader(new FileStream("config.bnf", FileMode.Open));
-                string line = reader.ReadLine();
-                int count = 1;
-                List<string> expectedTokens = new List<string>();
-
-                do
+                if (line == "")
                 {
-                    if(line == "")
-                    {
-                        line = reader.ReadLine();
-                        count++;
-                        continue;
-                    }
-                    if (CheckLine(line) == 1)
-                    {
-                        line = line.Replace(" ", "");
-                        string[] tokens1 = ReadNonterminalTokensFromLine(line);
-                        string[] tokens2 = ReadTerminalTokensFromLine(line);
-                        string rightSide = GetRightSide(line);
-                        string rootToken = tokens1[0];
-
-                        if (grammar.InitialToken == "")
-                            grammar.InitialToken = rootToken;
-                        grammar.AddNonterminalToken(rootToken); // dodajem samo onaj neterminalni token koji je definisan, ako je BNF pravilno napisan svi će biti dodani
-                        foreach (string token in tokens2)
-                            grammar.AddTerminalToken(token); //dodajem sve neterminalne tokene koji se nađu u jednoj liniji
-                        string[] definitions = SplitRightSide(rightSide); // [1]
-                        foreach (var definition in definitions)
-                            grammar.AddProduction(rootToken, definition);
-
-                        for (int i = 1; i < tokens1.Length; i++)
-                            expectedTokens.Add(tokens1[i]);
-                        expectedTokens = RemoveExpectedToken(rootToken, expectedTokens);
-                    }
-                    else if(CheckLine(line) == 2)
-                    {
-                        line = line.Replace(" ", "");
-                        string[] tokens1 = ReadNonterminalTokensFromLine(line);
-                        string rootToken = tokens1[0];
-                        string rightSide = GetRightSide(line);
-
-                        if (grammar.InitialToken == "")
-                            grammar.InitialToken = rootToken;
-                        grammar.AddNonterminalToken(rootToken);
-                        grammar.AddSpecialTerminalToken(rightSide);
-                        grammar.AddProduction(rootToken, rightSide);
-
-                        expectedTokens = RemoveExpectedToken(rootToken, expectedTokens);
-                    }
-                    else
-                    {
-                        reader.Close();
-                        throw new RuleException("Greska - config.bnf file ne odgovara BNF notaciji. Ispravite liniju " + count.ToString());
-                    }
-
                     line = reader.ReadLine();
                     count++;
+                    continue;
                 }
-                while (line != null);
-                reader.Close();
-
-                if (expectedTokens.Count != 0)
+                int flag = CheckLine(line);
+                if (flag == 1)
                 {
-                    string tokens = "";
-                    foreach (string token in expectedTokens)
-                        tokens += token + " ";
-                    throw new RuleException("Greska - BNF notacija nije zadana pravilno. Sljedeci tokeni nisu definisani: " + tokens);
+                    line = line.Replace(" ", "");
+                    string[] tokens1 = ReadNonterminalTokensFromLine(line);
+                    string[] tokens2 = ReadTerminalTokensFromLine(line);
+                    string rightSide = GetRightSide(line);
+                    string rootToken = tokens1[0];
+
+                    if (grammar.InitialToken == "")
+                        grammar.InitialToken = rootToken;
+                    grammar.AddNonterminalToken(rootToken); // dodajem samo onaj neterminalni token koji je definisan, ako je BNF pravilno napisan svi će biti dodani
+                    foreach (string token in tokens2)
+                       grammar.AddTerminalToken(token); //dodajem sve neterminalne tokene koji se nađu u jednoj liniji
+                    string[] definitions = SplitRightSide(rightSide); // [1]
+                    foreach (var definition in definitions)
+                        grammar.AddProduction(rootToken, definition);
+    
+                    for (int i = 1; i < tokens1.Length; i++)
+                        expectedTokens.Add(tokens1[i]);
+
+                    expectedTokens = RemoveExpectedToken(rootToken, expectedTokens);
                 }
+                else if (flag == 2)
+                {
+                    line = line.Replace(" ", "");
+                    string[] tokens1 = ReadNonterminalTokensFromLine(line);
+                    string rootToken = tokens1[0];
+                    string rightSide = GetRightSide(line);
+
+                    if (grammar.InitialToken == "")
+                        grammar.InitialToken = rootToken;
+                    grammar.AddNonterminalToken(rootToken);
+                    grammar.AddSpecialTerminalToken(rightSide);
+                    grammar.AddProduction(rootToken, "\"" + rightSide + "\"");
+
+                    expectedTokens = RemoveExpectedToken(rootToken, expectedTokens);
+                }
+                else if (flag == 3)
+                {
+                    string rootToken = ReadNonterminalTokensFromLine(line)[0];
+                    string rightSide = Regex.Match(line, "regex\\(.*?\\)").Value;
+
+                    if (grammar.InitialToken == "")
+                        grammar.InitialToken = rootToken;
+                    grammar.AddNonterminalToken(rootToken);
+                    grammar.AddSpecialTerminalToken(rightSide);
+                    grammar.AddProduction(rootToken, "\"" + rightSide.Replace(" ", "_") + "\"");
+
+                    expectedTokens = RemoveExpectedToken(rootToken, expectedTokens);
+                }
+                else
+                {
+                    reader.Close();
+                    throw new RuleException("Greska - config.bnf file ne odgovara BNF notaciji. Ispravite liniju " + count.ToString());
+                }
+
+                line = reader.ReadLine();
+                count++;
             }
+            while (line != null);
+            reader.Close();
+
+            if (expectedTokens.Count != 0)
+            {
+                string tokens = "";
+                foreach (string token in expectedTokens)
+                   tokens += token + " ";
+                throw new RuleException("Greska - BNF notacija nije zadana pravilno. Sljedeci tokeni nisu definisani: " + tokens);
+            }
+ 
             return grammar;
         }
 
@@ -145,9 +164,10 @@ namespace BNFParser
                      line.Equals(new Regex(LINE3).Match(line).Value) ||
                      line.Equals(new Regex(LINE4).Match(line).Value) ||
                      line.Equals(new Regex(LINE5).Match(line).Value) ||
-                     line.Equals(new Regex(LINE6).Match(line).Value) ||
-                     line.Equals(new Regex(LINE7).Match(line).Value))
+                     line.Equals(new Regex(LINE6).Match(line).Value))
                 return 2;
+            else if (line.Equals(new Regex(LINE7).Match(line).Value))
+                return 3;
             else
                 return -1;
         }
@@ -173,7 +193,7 @@ namespace BNFParser
 
         private static string[] ReadTerminalTokensFromLine(string line)
         {
-            MatchCollection matches = new Regex("\"[A-Za-z0-9_]+\"").Matches(line);
+            MatchCollection matches = new Regex("\"[A-Za-z0-9 _]+\"").Matches(line);
             List<string> tokens = new List<string>();
             foreach (Match match in matches)
                 tokens.Add(match.Value);

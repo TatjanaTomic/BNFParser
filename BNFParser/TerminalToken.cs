@@ -16,7 +16,7 @@ namespace BNFParser
         public TerminalToken(string name, string regex)
         {
             Name = name;
-            RegexPattern = regex;
+            RegexPattern = " " + regex + " ";
             Definition = new Regex(RegexPattern);
         }
         
