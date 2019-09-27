@@ -16,9 +16,9 @@ namespace BNFParser
         public List<(string token, string definition)> productions;
 
         public static readonly string PHONE_NUMBER = "(((\\+|00) *[0-9]{2,3}) *|0)[0-9]{2}(\\/|-| )?[0-9]{3}(-| )?[0-9]{3,4}";
-        public static readonly string CONSTANT = "[-+]?[0-9]+(?:\\.[0-9]+)*(?:[eE][-+]?[0-9]*)?";
+        public static readonly string CONSTANT = "[-+]?[0-9]+(?:\\.[0-9]+)*";
         public static readonly string EMAIL = "[a-zA-Z0-9.!#$%&’*+\\/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\\.[a-zA-Z0-9-]+)*";
-        public static readonly string URL;
+        public static readonly string URL = "(?:https?:\\/\\/|ftp:\\/\\/|www\\.|[^\\s:=]+@www\\.).*?[a-z0-9]+(?:[-.]{1}[a-z0-9]+)*\\.[a-z]{2,5}(?::[0-9]{1,5})?(?:\\/.*)?";
         public static string CITY;
 
         public Grammar()
@@ -100,6 +100,14 @@ namespace BNFParser
                     str = str.Replace(special, "\\" + special);
             }
             return str;
+        }
+
+        internal void AddRecursion(string rootToken, string word)
+        {
+            nonterminalTokens.Add(rootToken);
+            string regexPattern = "(" + word.Substring(1, word.Length-2) + " *)+";
+            terminalTokens.Add(new TerminalToken(word, regexPattern));
+            productions.Add((rootToken, word));
         }
     }
 }

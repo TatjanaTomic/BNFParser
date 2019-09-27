@@ -47,7 +47,8 @@ namespace BNFParser
             if (!File.Exists("config.bnf"))
                 throw new FileNotFoundException("Greška - ne postoji config.bnf fajl.");
 
-            string path = "C:\\Users\\Tatjana Tomic\\source\\repos\\BNFParser\\BNFParser\\bin\\Debug\\config.bnf";
+            string inputPath = Directory.GetCurrentDirectory();
+            string path =  inputPath + "\\config.bnf";
             StreamReader reader = new StreamReader(new FileStream(path, FileMode.Open));
             string line = reader.ReadLine();
             int count = 1;
@@ -75,13 +76,18 @@ namespace BNFParser
 
                     if (grammar.InitialToken == "")
                         grammar.InitialToken = rootToken;
-                    grammar.AddNonterminalToken(rootToken); // dodajem samo onaj neterminalni token koji je definisan, ako je BNF pravilno napisan svi će biti dodani
-                    foreach (string token in tokens2)
-                       grammar.AddTerminalToken(token); //dodajem sve neterminalne tokene koji se nađu u jednoj liniji
-                    string[] definitions = SplitRightSide(rightSide); // [1]
-                    foreach (var definition in definitions)
-                        grammar.AddProduction(rootToken, definition);
-    
+                    
+                    if (tokens2.Count() != 0 && IsRecursion(line, rootToken, tokens2[0]))
+                        grammar.AddRecursion(rootToken, tokens2[0]);
+                    else
+                    {
+                        grammar.AddNonterminalToken(rootToken); // dodajem samo onaj neterminalni token koji je definisan, ako je BNF pravilno napisan svi će biti dodani
+                        foreach (string token in tokens2)
+                            grammar.AddTerminalToken(token); //dodajem sve neterminalne tokene koji se nađu u jednoj liniji
+                        string[] definitions = SplitRightSide(rightSide); // [1]
+                        foreach (var definition in definitions)
+                            grammar.AddProduction(rootToken, definition);
+                    }
                     for (int i = 1; i < tokens1.Length; i++)
                         expectedTokens.Add(tokens1[i]);
 
@@ -136,6 +142,15 @@ namespace BNFParser
             }
  
             return grammar;
+        }
+
+        private static bool IsRecursion(string line, string rootToken, string word)
+        {
+            string pattern = rootToken + "::=" + word + "\\|" + "(" + word + rootToken + "|" + rootToken + word + ")";
+            Regex recursion = new Regex(pattern);
+            if (recursion.Match(line).Success && recursion.Match(line).Value == line)
+                return true;
+            return false;
         }
 
         private static string[] SplitRightSide(string rightSide)
